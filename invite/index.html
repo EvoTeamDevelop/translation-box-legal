@@ -31,7 +31,7 @@
         <div class="code" id="code"></div>
         <button class="button primary" id="get">Get Translation Box</button>
         <a class="button secondary" id="open">I have the app – open it</a>
-        <p class="note" id="status">After installing, tap <b>Paste invite</b> at the end of setup, or type the code above.</p>
+        <p class="note" id="status">When the app opens, tap <b>Allow Paste</b> and you'll be friends straight away.</p>
     </section>
     <section id="broken" hidden>
         <h1>This invite link is broken</h1>
@@ -41,8 +41,9 @@
 <script>
     // Set once the app is live in the App Store, e.g. "https://apps.apple.com/app/id1234567890".
     const APP_STORE_URL = "";
-    // The app looks for this prefix on the clipboard (src/modules/invite.rs).
-    const CLIPBOARD_PREFIX = "translationbox-invite:";
+    // Copied as is: the app spots a link on the clipboard on its first launch
+    // and takes the code from it (src/modules/invite.rs).
+    const INVITE_PAGE_URL = "https://evoteamdevelop.github.io/translation-box-legal/invite/";
 
     const raw = new URLSearchParams(location.search).get("c") || "";
     const code = raw.trim().toUpperCase();
@@ -57,11 +58,10 @@
 
         const status = document.getElementById("status");
         document.getElementById("get").addEventListener("click", async () => {
-            // Copying has to happen inside the tap. The app picks the code up
-            // from the clipboard on its first launch.
+            // Copying has to happen inside the tap.
             let copied = false;
             try {
-                await navigator.clipboard.writeText(CLIPBOARD_PREFIX + code);
+                await navigator.clipboard.writeText(INVITE_PAGE_URL + "?c=" + code);
                 copied = true;
             } catch (e) {}
 
