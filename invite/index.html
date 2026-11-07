@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex">
+    <title>Join me in Translation Box</title>
+    <style>
+        :root { --bg: #f4f7f8; --card: #ffffff; --fg: #17212b; --muted: #5b6b78; --accent: #24b8b8; --on-accent: #0d2a2a; --line: #dbe3e7; }
+        @media (prefers-color-scheme: dark) {
+            :root { --bg: #18222d; --card: #1f2b37; --fg: #f3f6f8; --muted: #a3b1bc; --accent: #3dd6d6; --on-accent: #0d2a2a; --line: #2f3d4a; }
+        }
+        * { box-sizing: border-box; }
+        body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--fg); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.5; display: flex; align-items: center; justify-content: center; padding: 24px 16px; }
+        main { width: 100%; max-width: 420px; background: var(--card); border: 1px solid var(--line); border-radius: 24px; padding: 28px 22px; text-align: center; }
+        h1 { font-size: 1.5em; margin: 0 0 8px; }
+        p { margin: 0 0 16px; color: var(--muted); }
+        .code { font-size: 2.2em; font-weight: 700; letter-spacing: 0.18em; color: var(--fg); margin: 8px 0 20px; }
+        .button { display: block; width: 100%; min-height: 52px; padding: 14px; border-radius: 16px; border: 0; font: inherit; font-weight: 600; font-size: 1.05em; text-decoration: none; cursor: pointer; margin-bottom: 12px; }
+        .primary { background: var(--accent); color: var(--on-accent); }
+        .secondary { background: transparent; color: var(--fg); border: 1px solid var(--line); }
+        .note { font-size: 0.9em; margin: 8px 0 0; }
+        [hidden] { display: none !important; }
+    </style>
+</head>
+<body>
+<main>
+    <section id="invite" hidden>
+        <h1>Practise languages together</h1>
+        <p>A friend invited you to Translation Box. Install the app and you'll see each other's streak and practice.</p>
+        <div class="code" id="code"></div>
+        <button class="button primary" id="get">Get Translation Box</button>
+        <a class="button secondary" id="open">I have the app – open it</a>
+        <p class="note" id="status">After installing, tap <b>Paste invite</b> at the end of setup, or type the code above.</p>
+    </section>
+    <section id="broken" hidden>
+        <h1>This invite link is broken</h1>
+        <p>Ask your friend for their six-character friend code and add it in the app under Profile → Friends.</p>
+    </section>
+</main>
+<script>
+    // Set once the app is live in the App Store, e.g. "https://apps.apple.com/app/id1234567890".
+    const APP_STORE_URL = "";
+    // The app looks for this prefix on the clipboard (src/modules/invite.rs).
+    const CLIPBOARD_PREFIX = "translationbox-invite:";
+
+    const raw = new URLSearchParams(location.search).get("c") || "";
+    const code = raw.trim().toUpperCase();
+    const valid = /^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{6}$/.test(code);
+
+    if (!valid) {
+        document.getElementById("broken").hidden = false;
+    } else {
+        document.getElementById("invite").hidden = false;
+        document.getElementById("code").textContent = code;
+        document.getElementById("open").href = "translationbox://friend/" + code;
+
+        const status = document.getElementById("status");
+        document.getElementById("get").addEventListener("click", async () => {
+            // Copying has to happen inside the tap. The app picks the code up
+            // from the clipboard on its first launch.
+            let copied = false;
+            try {
+                await navigator.clipboard.writeText(CLIPBOARD_PREFIX + code);
+                copied = true;
+            } catch (e) {}
+
+            if (APP_STORE_URL) {
+                location.href = APP_STORE_URL;
+            } else {
+                status.textContent = copied
+                    ? "Invite copied. The App Store link is coming soon."
+                    : "The App Store link is coming soon. Keep the code above.";
+            }
+        });
+    }
+</script>
+</body>
+</html>
